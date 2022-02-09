@@ -1,6 +1,5 @@
 <?php
 
-use App\Models\Task;
 use App\Models\Topic;
 use App\Models\Question;
 use Illuminate\Support\Facades\Route;
@@ -20,8 +19,8 @@ Route::get('/', function () {
     return view('main');
 });
 
-Route::get('/answers', [App\Http\Controllers\AnswerController::class, 'index']);
-Route::post('/answer', [App\Http\Controllers\AnswerController::class, 'create']);
+Route::get('/answers', 'AnswerController@index');
+Route::post('/answer', 'AnswerController@create');
 Route::delete('/answers/{answer}', [App\Http\Controllers\AnswerController::class, 'destroy']);
 
 Route::get('/questions', [App\Http\Controllers\QuestionController::class, 'index']);

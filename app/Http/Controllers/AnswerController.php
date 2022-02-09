@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\QuestionPostRequest;
 use App\Models\Answer;
 use App\Models\Question;
 use Illuminate\Http\Request;
@@ -16,12 +17,15 @@ class AnswerController extends Controller
      */
     public function index()
     {
-        $answers = Answer::orderBy('created_at', 'asc')->get();
+        $answers = Answer::with('question')->orderBy('created_at', 'asc')->get();
         $questions = Question::orderBy('created_at', 'asc')->get();
-        return view('answers', [
-            'answers' => $answers,
-            'questions' => $questions,
-        ]);
+        return view(
+            'answers',
+            [
+                'answers' => $answers,
+                'questions' => $questions,
+            ]
+        );
     }
 
     /**
@@ -30,23 +34,23 @@ class AnswerController extends Controller
      * @param Request $request
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Http\RedirectResponse|\Illuminate\Http\Response|\Illuminate\Routing\Redirector
      */
-    public function create(Request $request)
+    public function create(QuestionPostRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'text' => 'required|max:255',
-        ]);
+        $validated = $request->validated();
 
-        if ($validator->fails()) {
+        if (!$validated) {
             return redirect('/answers')
                 ->withInput()
-                ->withErrors($validator);
+                ->withErrors($request);
         }
 
-        $answer = new Answer();
-        $answer->text = $request->text;
-        $answer->question_id = $request->question_id;
-        $answer->correct = $request->correct ? true : false;
-        $answer->save();
+        Answer::create(
+            [
+                'text' => $request->post('text'),
+                'question_id' => $request->post('question_id'),
+                'correct' => $request->post('correct', false)
+            ]
+        );
 
         return redirect('/answers');
     }
@@ -54,7 +58,7 @@ class AnswerController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
@@ -65,7 +69,7 @@ class AnswerController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  int  $id
+     * @param int $id
      * @return \Illuminate\Http\Response
      */
     public function show($id)
@@ -76,7 +80,7 @@ class AnswerController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  int  $id
+     * @param int $id
      * @return \Illuminate\Http\Response
      */
     public function edit($id)
@@ -87,8 +91,8 @@ class AnswerController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
+     * @param \Illuminate\Http\Request $request
+     * @param int $id
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $id)
@@ -99,7 +103,7 @@ class AnswerController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  int  $id
+     * @param int $id
      * @return \Illuminate\Http\Response
      */
     public function destroy(Answer $answer)
