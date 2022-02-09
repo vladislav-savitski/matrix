@@ -20,6 +20,10 @@ Route::get('/', function () {
     return view('main');
 });
 
+Route::get('/answers', [App\Http\Controllers\AnswerController::class, 'index']);
+Route::post('/answer', [App\Http\Controllers\AnswerController::class, 'create']);
+Route::delete('/answers/{answer}', [App\Http\Controllers\AnswerController::class, 'destroy']);
+
 Route::get('/questions', [App\Http\Controllers\QuestionController::class, 'index']);
 Route::post('/question', [App\Http\Controllers\QuestionController::class, 'create']);
 Route::delete('/questions/{question}', [App\Http\Controllers\QuestionController::class, 'destroy']);

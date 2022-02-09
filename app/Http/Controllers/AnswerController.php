@@ -2,28 +2,53 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Answer;
+use App\Models\Question;
 use Illuminate\Http\Request;
+use Validator;
 
 class AnswerController extends Controller
 {
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Http\Response
      */
     public function index()
     {
-        //
+        $answers = Answer::orderBy('created_at', 'asc')->get();
+        $questions = Question::orderBy('created_at', 'asc')->get();
+        return view('answers', [
+            'answers' => $answers,
+            'questions' => $questions,
+        ]);
     }
 
     /**
      * Show the form for creating a new resource.
      *
-     * @return \Illuminate\Http\Response
+     * @param Request $request
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Http\RedirectResponse|\Illuminate\Http\Response|\Illuminate\Routing\Redirector
      */
-    public function create()
+    public function create(Request $request)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'text' => 'required|max:255',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect('/answers')
+                ->withInput()
+                ->withErrors($validator);
+        }
+
+        $answer = new Answer();
+        $answer->text = $request->text;
+        $answer->question_id = $request->question_id;
+        $answer->correct = $request->correct ? true : false;
+        $answer->save();
+
+        return redirect('/answers');
     }
 
     /**
@@ -77,8 +102,9 @@ class AnswerController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Answer $answer)
     {
-        //
+        $answer->delete();
+        return redirect('/answers');
     }
 }

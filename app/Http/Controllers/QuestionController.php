@@ -43,10 +43,10 @@ class QuestionController extends Controller
                 ->withErrors($validator);
         }
 
-        $task = new Question;
-        $task->text = $request->text;
-        $task->topic_id = $request->topic_id;
-        $task->save();
+        $question = new Question;
+        $question->text = $request->text;
+        $question->topic_id = $request->topic_id;
+        $question->save();
 
         return redirect('/questions');
     }
