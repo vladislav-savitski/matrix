@@ -4,11 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Models\Answer;
 use App\Models\Question;
+use App\Repository\EloquentAnswerRepository;
 use Illuminate\Http\Request;
 use Validator;
 
 class AnswerController extends Controller
 {
+    protected $eloquentAnswer;
+
+    public function __construct(EloquentAnswerRepository $eloquentAnswer) {
+        $this->eloquentAnswer = $eloquentAnswer;
+    }
     /**
      * Display a listing of the resource.
      *
@@ -16,7 +22,7 @@ class AnswerController extends Controller
      */
     public function index()
     {
-        $answers = Answer::orderBy('created_at', 'asc')->get();
+        $answers = $this->eloquentAnswer->getAnswers();
         $questions = Question::orderBy('created_at', 'asc')->get();
         return view('answers', [
             'answers' => $answers,
@@ -42,13 +48,12 @@ class AnswerController extends Controller
                 ->withErrors($validator);
         }
 
-        $answer = new Answer();
-        $answer->text = $request->text;
-        $answer->question_id = $request->question_id;
-        $answer->correct = $request->correct ? true : false;
-        $answer->save();
+        $answer = $this->eloquentAnswer->createAnswer($request);
+        if (!empty($answer)){
+            return redirect('/answers');
+        }
 
-        return redirect('/answers');
+        return redirect('/answers', 404);
     }
 
     /**
@@ -99,8 +104,8 @@ class AnswerController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @param Answer $answer
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Http\RedirectResponse|\Illuminate\Http\Response|\Illuminate\Routing\Redirector
      */
     public function destroy(Answer $answer)
     {

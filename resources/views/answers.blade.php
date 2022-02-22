@@ -57,13 +57,13 @@
                         <div>{{ $answer->text }}</div>
                     </td>
                     <td>
-                        <div>{{ \App\Models\Question::find($answer->question_id)->text }} </div>
+                        <div>{{ $answer->question->text }} </div>
                     </td>
                     <td>
-                        <div>{{ $answer->correct === 1 ? 'Yes' : 'No'}}</div>
+                        <div>{{ $answer->correct === 1 ? 'Yes' : 'No' }}</div>
                     </td>
                     <td>
-                        <form action="{{ url('answer/'.$answer->id) }}" method="POST">
+                        <form action="{{ url('answers/' . $answer->id) }}" method="POST">
                             {{ csrf_field() }}
                             {{ method_field('DELETE') }}
 
