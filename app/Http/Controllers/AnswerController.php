@@ -3,18 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Models\Answer;
-use App\Models\Question;
-use App\Repository\EloquentAnswerRepository;
+use App\Repository\Eloquent\EloquentAnswerRepository;
+use App\Repository\Eloquent\EloquentQuestionRepository;
 use Illuminate\Http\Request;
 use Validator;
 
 class AnswerController extends Controller
 {
     protected $eloquentAnswer;
+    protected $eloquentQuestion;
 
-    public function __construct(EloquentAnswerRepository $eloquentAnswer) {
+    public function __construct(EloquentAnswerRepository $eloquentAnswer, EloquentQuestionRepository $eloquentQuestion) {
         $this->eloquentAnswer = $eloquentAnswer;
+        $this->eloquentQuestion = $eloquentQuestion;
     }
+
     /**
      * Display a listing of the resource.
      *
@@ -23,7 +26,7 @@ class AnswerController extends Controller
     public function index()
     {
         $answers = $this->eloquentAnswer->getAnswers();
-        $questions = Question::orderBy('created_at', 'asc')->get();
+        $questions = $this->eloquentQuestion->getQuestions();
         return view('answers', [
             'answers' => $answers,
             'questions' => $questions,
@@ -57,59 +60,40 @@ class AnswerController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
-    }
-
-    /**
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Http\RedirectResponse|\Illuminate\Http\Response|\Illuminate\Routing\Redirector
      */
     public function update(Request $request, $id)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'text' => 'required|max:255',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect('/answers')
+                ->withInput()
+                ->withErrors($validator);
+        }
+
+        $answer = $this->eloquentAnswer->updateAnswer($request, $id);
+
+        if ($answer != null){
+            return redirect('/answers');
+        }
+
+        return redirect('/answers', 404);
     }
 
     /**
-     * Remove the specified resource from storage.
-     *
      * @param Answer $answer
-     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Http\RedirectResponse|\Illuminate\Http\Response|\Illuminate\Routing\Redirector
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
      */
-    public function destroy(Answer $answer)
+    public function delete(Answer $answer)
     {
-        $answer->delete();
+        $this->eloquentAnswer->deleteAnswer($answer);
         return redirect('/answers');
     }
 }

@@ -3,13 +3,22 @@
 namespace App\Http\Controllers;
 
 use App\Models\Question;
-use App\Models\Topic;
+use App\Repository\Eloquent\EloquentQuestionRepository;
+use App\Repository\Eloquent\EloquentTopicRepository;
 use Illuminate\Http\Request;
 use Validator;
 
 
 class QuestionController extends Controller
 {
+    protected $eloquentQuestion;
+    protected $eloquentTopic;
+
+    public function __construct(EloquentQuestionRepository $eloquentQuestion, EloquentTopicRepository  $eloquentTopic) {
+        $this->eloquentQuestion = $eloquentQuestion;
+        $this->eloquentTopic = $eloquentTopic;
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -17,8 +26,8 @@ class QuestionController extends Controller
      */
     public function index()
     {
-        $questions = Question::orderBy('created_at', 'asc')->get();
-        $topics = Topic::orderBy('created_at', 'asc')->get();
+        $questions = $this->eloquentQuestion->getQuestions();
+        $topics = $this->eloquentTopic->getTopics();
         return view('questions', [
             'questions' => $questions,
             'topics' => $topics
@@ -43,45 +52,12 @@ class QuestionController extends Controller
                 ->withErrors($validator);
         }
 
-        $question = new Question;
-        $question->text = $request->text;
-        $question->topic_id = $request->topic_id;
-        $question->save();
+        $question = $this->eloquentQuestion->createQuestion($request);
+        if (!empty($question)){
+            return redirect('/questions');
+        }
 
-        return redirect('/questions');
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
+        return redirect('/questions', 404);
     }
 
     /**
@@ -89,20 +65,34 @@ class QuestionController extends Controller
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Http\RedirectResponse|\Illuminate\Http\Response|\Illuminate\Routing\Redirector
      */
     public function update(Request $request, $id)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'text' => 'required|max:255',
+            ]);
+
+        if ($validator->fails()) {
+            return redirect('/questions')
+                ->withInput()
+                ->withErrors($validator);
+        }
+
+        $question = $this->eloquentQuestion->updateQuestion($request, $id);
+
+        if ($question != null) {
+            return redirect('/questions');
+        }
+
+        return redirect('/questions', 404);
     }
 
     /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @param Question $question
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
      */
-    public function destroy(Question $question)
+    public function delete(Question $question)
     {
         $question->delete();
         return redirect('/questions');

@@ -10,4 +10,5 @@ interface AnswerRepository
     public function getAnswers();
     public function getAnswerById($id);
     public function updateAnswer(Request $request, $id);
+    public function deleteAnswer(Answer $answer);
 }

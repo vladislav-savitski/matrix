@@ -22,15 +22,15 @@ Route::get('/', function () {
 
 Route::get('/answers', [App\Http\Controllers\AnswerController::class, 'index']);
 Route::post('/answer', [App\Http\Controllers\AnswerController::class, 'create']);
-Route::delete('/answers/{answer}', [App\Http\Controllers\AnswerController::class, 'destroy']);
+Route::delete('/answers/{answer}', [App\Http\Controllers\AnswerController::class, 'delete']);
 
 Route::get('/questions', [App\Http\Controllers\QuestionController::class, 'index']);
 Route::post('/question', [App\Http\Controllers\QuestionController::class, 'create']);
-Route::delete('/questions/{question}', [App\Http\Controllers\QuestionController::class, 'destroy']);
+Route::delete('/questions/{question}', [App\Http\Controllers\QuestionController::class, 'delete']);
 
 Route::get('/topics', [App\Http\Controllers\TopicController::class, 'index']);
 Route::post('/topic', [App\Http\Controllers\TopicController::class, 'create']);
-Route::delete('/topics/{topic}', [App\Http\Controllers\TopicController::class, 'destroy']);
+Route::delete('/topics/{topic}', [App\Http\Controllers\TopicController::class, 'delete']);
 
 // Маршруты аутентификации...
 Route::get('auth/login', 'Auth\AuthController@getLogin');

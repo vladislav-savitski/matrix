@@ -3,62 +3,48 @@
 namespace App\Http\Controllers;
 
 use App\Models\Topic;
+use App\Repository\Eloquent\EloquentTopicRepository;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Validator;
 
 class TopicController extends Controller
 {
+    protected $eloquentTopic;
+
+    public function __construct(EloquentTopicRepository $eloquentTopic) {
+        $this->eloquentTopic = $eloquentTopic;
+    }
+
     /**
      *
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|Response
      */
     public function index()
     {
-        $topics = Topic::orderBy('created_at', 'asc')->get();
+        $topics = $this->eloquentTopic->getTopics();
 
         return view('topics', ['topics' => $topics]);
     }
 
     public function create(Request $request)
     {
-        $topic = new Topic;
-        $topic->name = $request->name;
-        $topic->save();
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|max:255',
+        ]);
 
-        return redirect('/topics');
-    }
+        if ($validator->fails()) {
+            return redirect('/topics')
+                ->withInput()
+                ->withErrors($validator);
+        }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
-    }
+        $topic = $this->eloquentTopic->createTopic($request);
+        if (!empty($topic)){
+            return redirect('/topics');
+        }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param int $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param int $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
+        return redirect('/topics', 404);
     }
 
     /**
@@ -66,15 +52,34 @@ class TopicController extends Controller
      *
      * @param \Illuminate\Http\Request $request
      * @param int $id
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Http\RedirectResponse|Response|\Illuminate\Routing\Redirector
      */
     public function update(Request $request, $id)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'text' => 'required|max:255',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect('/topics')
+                ->withInput()
+                ->withErrors($validator);
+        }
+
+        $topic = $this->eloquentTopic->updateTopic($request, $id);
+
+        if ($topic != null){
+            return redirect('/topics');
+        }
+
+        return redirect('/topics', 404);
     }
 
-
-    public function destroy(Topic $topic)
+    /**
+     * @param Topic $topic
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
+     */
+    public function delete(Topic $topic)
     {
         $topic->delete();
         return redirect('/topics');
