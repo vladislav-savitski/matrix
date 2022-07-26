@@ -20,6 +20,11 @@ Route::get('/', function () {
     return view('main');
 });
 
+Route::get('/quizzes', [App\Http\Controllers\QuizController::class, 'index']);
+Route::post('/quizzes', [App\Http\Controllers\QuizController::class, 'create']);
+Route::delete('/quizzes/{quiz}', [App\Http\Controllers\QuizController::class, 'delete']);
+Route::post('/quiz-add-question', [App\Http\Controllers\QuizController::class, 'add_question']);
+
 Route::get('/answers', [App\Http\Controllers\AnswerController::class, 'index']);
 Route::post('/answer', [App\Http\Controllers\AnswerController::class, 'create']);
 Route::delete('/answers/{answer}', [App\Http\Controllers\AnswerController::class, 'delete']);

@@ -37,7 +37,7 @@
                         Text
                     </th>
                     <th scope="col">
-                        Topic
+                        Question
                     </th>
                     <th scope="col">
                         Correct

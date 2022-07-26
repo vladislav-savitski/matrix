@@ -42,6 +42,7 @@
                         <li class="nav-item"><a href="/topics" class="nav-link">Topics</a></li>
                         <li class="nav-item"><a href="/questions" class="nav-link">Questions</a></li>
                         <li class="nav-item"><a href="/answers" class="nav-link">Answers</a></li>
+                        <li class="nav-item"><a href="/quizzes" class="nav-link">Quiz</a></li>
                         <!-- Authentication Links -->
                         @guest
                             @if (Route::has('login'))
